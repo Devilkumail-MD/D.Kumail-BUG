@@ -23,7 +23,7 @@ A powerful WhatsApp crash bot with iOS, Android & multi-platform crash methods. 
 ## Get Session ID
 
 <p align="center">
-  <a href="https://your-session-site.replit.app">
+  <a href="https://dk-md.org">
     <img src="https://img.shields.io/badge/Get%20Session-D.Kumail%20Bug-red?style=for-the-badge" alt="session" />
   </a>
 </p>
