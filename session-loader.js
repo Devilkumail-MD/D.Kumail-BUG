@@ -27,7 +27,7 @@ async function loadSession() {
       const parsed = JSON.parse(decoded);
       const creds = parsed.creds || parsed;
 
-      const sessionDir = path.join(__dirname, 'session');
+      const sessionDir = path.join(__dirname, 'Usamasession');
       if (!fs.existsSync(sessionDir)) {
         fs.mkdirSync(sessionDir, { recursive: true });
       }
@@ -37,7 +37,7 @@ async function loadSession() {
         JSON.stringify(creds, null, 2)
       );
 
-      console.log('[D.Kumail Bug] ✅ Session loaded and saved to session/creds.json');
+      console.log('[D.Kumail Bug] ✅ Session loaded and saved to Usamasession/creds.json');
     } else {
       console.log('[D.Kumail Bug] ❌ Invalid session data received');
       console.log('[D.Kumail Bug] Response keys:', Object.keys(response.data || {}));
