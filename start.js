@@ -3,6 +3,53 @@ const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 
+const readlineModule = require('readline');
+const OrigInterface = readlineModule.Interface;
+
+class PatchedInterface extends OrigInterface {
+  constructor(...args) {
+    super(...args);
+    this._closed = false;
+  }
+
+  close() {
+    this._closed = true;
+  }
+
+  question(query, options, cb) {
+    if (typeof options === 'function') {
+      cb = options;
+    }
+    console.log('[D.Kumail Bug] Auto-answering prompt:', String(query).trim().substring(0, 60));
+    if (cb) {
+      setTimeout(() => cb(''), 10);
+    }
+    return this;
+  }
+}
+
+const origCreateInterface = readlineModule.createInterface;
+readlineModule.createInterface = function(...args) {
+  return new PatchedInterface(...args);
+};
+readlineModule.Interface = PatchedInterface;
+
+process.on('uncaughtException', (err) => {
+  if (err.code === 'ERR_USE_AFTER_CLOSE') {
+    console.log('[D.Kumail Bug] Suppressed ERR_USE_AFTER_CLOSE (no terminal on Railway)');
+    return;
+  }
+  console.error('[D.Kumail Bug] Uncaught:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  if (reason && reason.code === 'ERR_USE_AFTER_CLOSE') {
+    console.log('[D.Kumail Bug] Suppressed unhandled rejection: ERR_USE_AFTER_CLOSE');
+    return;
+  }
+  console.error('[D.Kumail Bug] Unhandled rejection:', reason);
+});
+
 async function main() {
   console.log('╔══════════════════════════════════════╗');
   console.log('║       D.Kumail Bug - Starting        ║');
@@ -98,6 +145,24 @@ async function main() {
           console.log('[D.Kumail Bug] Startup message sent!');
         } catch (err) {
           console.error('[D.Kumail Bug] Failed to send startup message:', err.message);
+        }
+      }
+
+      if (update.connection === 'close') {
+        const statusCode = update.lastDisconnect?.error?.output?.statusCode;
+        const reason = update.lastDisconnect?.error?.output?.payload?.message || 'Unknown';
+
+        if (statusCode === 401 || statusCode === 440 || statusCode === 515) {
+          console.log('╔══════════════════════════════════════╗');
+          console.log('║  ⚠️  SESSION LOGGED OUT              ║');
+          console.log('║  Session expired or was removed.     ║');
+          console.log('║  Generate a new session ID and       ║');
+          console.log('║  redeploy with the new SESSION.      ║');
+          console.log('╚══════════════════════════════════════╝');
+          console.log(`[D.Kumail Bug] Status: ${statusCode} | Reason: ${reason}`);
+        } else {
+          console.log(`[D.Kumail Bug] Connection closed. Status: ${statusCode} | Reason: ${reason}`);
+          console.log('[D.Kumail Bug] Bot will try to reconnect...');
         }
       }
     });
