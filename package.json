@@ -14,6 +14,9 @@
     ],
     "author": "Muhammad Kumail (D.Kumail)",
     "license": "MIT",
+    "engines": {
+        "node": ">=20.0.0"
+    },
     "dependencies": {
         "@adiwajshing/keyed-db": "^0.2.4",
         "@colors/colors": "^1.5.0",
